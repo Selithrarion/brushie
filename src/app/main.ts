@@ -1,7 +1,8 @@
 import './assets/main.css'
+import '../polyfills/canvas-polyfill.js'
 
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from './router'

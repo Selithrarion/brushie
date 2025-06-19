@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import Canvas2D from '@/features/render/Canvas2D.vue'
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+	<div>
+		<Canvas2D />
+	</div>
 </template>

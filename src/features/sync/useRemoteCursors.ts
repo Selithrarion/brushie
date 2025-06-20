@@ -18,12 +18,10 @@ function pastelColorFromClientID(id: number): string {
 export function useRemoteCursors(provider: { awareness: Awareness }) {
 	const otherCursors = ref<Record<ClientID, RemoteCursor>>({})
 
+	provider.awareness.setLocalStateField('name', 'Sergey')
+	provider.awareness.setLocalStateField('color', pastelColorFromClientID(provider.awareness.clientID))
 	function updateCursor(pos: PositionXY) {
-		provider.awareness.setLocalState({
-			cursor: { x: pos.x, y: pos.y },
-			name: 'Sergey',
-			color: pastelColorFromClientID(provider.awareness.clientID),
-		})
+		provider.awareness.setLocalStateField('cursor', { x: pos.x, y: pos.y })
 	}
 
 	provider.awareness.on('change', () => {

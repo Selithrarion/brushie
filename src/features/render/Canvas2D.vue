@@ -1,144 +1,49 @@
 <template>
-	<div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-pink-100 to-green-100 p-6">
-		<div class="rounded-xl border border-white/80 bg-white/40 p-4 backdrop-blur-md">
-			<canvas
-				class="h-auto w-full"
-				ref="canvas"
-				width="800"
-				height="600"
-				@mousedown="onMouseDown"
-				@mouseup="onMouseUp"
-				@mousemove="onMouseMove"
-				@mouseleave="onMouseLeave"
-			/>
-			<div class="mt-3 text-sm text-gray-700">
-				<p>Status: {{ status }}</p>
-				<p>Peers: {{ peersCount }}</p>
-			</div>
-		</div>
-	</div>
+	<canvas
+		ref="canvasRef"
+		class="absolute right-0 left-0 h-full w-full"
+		@contextmenu.prevent="onContextMenu"
+		@mousedown="onMouseDown"
+		@mouseleave="onMouseLeave"
+		@mousemove="onMouseMove"
+		@mouseup="onMouseUp"
+		@wheel.prevent="handleWheel"
+	/>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect } from 'vue'
+import { onMounted, onBeforeUnmount, watchEffect, ref } from 'vue'
 
-import type { Shape } from '@/features/render/Shape.ts'
+import { useCanvasRenderer } from '@/features/render/useCanvasRenderer.ts'
+import { useCanvasZoom } from '@/features/render/useCanvasZoom.ts'
+import { usePanInteraction } from '@/features/render/usePanInteraction.ts'
 import { useShapeInteractions } from '@/features/render/useShapeInteractions.ts'
+import { useToolManager } from '@/features/render/useToolManager.ts'
+import { getPos } from '@/features/render/utils/getPos.ts'
 import { useRemoteCursors } from '@/features/sync/useRemoteCursors.ts'
+import { useUndoRedo } from '@/features/sync/useUndoRedo.ts'
 import { useYShapes } from '@/features/sync/useYShapes.ts'
-import type { PositionXY } from '@/shared/types/PositionXY.ts'
-import { lightenColor, shadeColor } from '@/shared/utils/colors.ts'
+import { useContextMenu } from '@/shared/ui/menu/useContextMenu.ts'
 
-const canvas = ref<HTMLCanvasElement | null>(null)
+const { toolManager, menu } = defineProps<{
+	toolManager: ReturnType<typeof useToolManager>
+	menu: ReturnType<typeof useContextMenu>
+}>()
 
-const { provider, shapes, peersCount, status } = useYShapes()
+const canvasRef = ref<HTMLCanvasElement>()
 
-const {
-	HANDLE_SIZE,
-	draggingShapeID,
-	resizingShapeID,
-	hoveredShapeID,
-	handleMouseDown,
-	handleMouseMove,
-	handleMouseUp,
-	handleMouseLeave,
-	computeHandles,
-	getCursor,
-} = useShapeInteractions()
+const { provider, shapes, undo, redo } = useYShapes()
+useUndoRedo(undo, redo)
+const zoom = useCanvasZoom()
+const pan = usePanInteraction()
+const remoteCursors = useRemoteCursors(provider)
+const shapeInteractions = useShapeInteractions()
+const renderer = useCanvasRenderer(canvasRef, { shapes, zoom, shapeInteractions, remoteCursors })
 
-const { drawCursors, updateCursor } = useRemoteCursors(provider)
-
-function drawMarkers(ctx: CanvasRenderingContext2D, shape: Shape) {
-	const radius = HANDLE_SIZE / 2
-
-	for (const { x, y } of computeHandles(shape)) {
-		ctx.shadowColor = shadeColor(shape.color!, 60)
-		ctx.shadowBlur = 4
-
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
-		ctx.beginPath()
-		ctx.arc(x, y, radius, 0, Math.PI * 2)
-		ctx.fill()
-
-		ctx.shadowBlur = 0
-		ctx.strokeStyle = shadeColor(shape.color!, 50)
-		ctx.lineWidth = 1.2
-		ctx.beginPath()
-		ctx.arc(x, y, radius, 0, Math.PI * 2)
-		ctx.stroke()
-	}
-}
-
-function drawShapes(ctx: CanvasRenderingContext2D) {
-	for (const shape of shapes.value) {
-		const isActive = [draggingShapeID.value, resizingShapeID.value, hoveredShapeID.value].includes(shape.id)
-
-		// fill
-		ctx.fillStyle = isActive ? lightenColor(shape.color!) : shape.color!
-		ctx.fillRect(shape.x, shape.y, shape.width, shape.height)
-
-		// border
-		ctx.strokeStyle = shadeColor(shape.color!)
-		ctx.lineWidth = 1
-		ctx.strokeRect(shape.x, shape.y, shape.width, shape.height)
-
-		if (isActive) {
-			// more border
-			ctx.strokeStyle = shadeColor(shape.color!)
-			ctx.lineWidth = 2
-			ctx.strokeRect(shape.x, shape.y, shape.width, shape.height)
-
-			drawMarkers(ctx, shape)
-		}
-	}
-}
-function draw() {
-	if (!canvas.value) return
-	const ctx = canvas.value.getContext('2d')!
-	ctx.clearRect(0, 0, canvas.value.width, canvas.value.height)
-
-	drawShapes(ctx)
-	drawCursors(ctx)
-}
-
-function pos(e: MouseEvent) {
-	const el = canvas.value!
-	const rect = el.getBoundingClientRect()
-
-	const scaleX = el.width / rect.width
-	const scaleY = el.height / rect.height
-
-	return {
-		x: (e.clientX - rect.left) * scaleX,
-		y: (e.clientY - rect.top) * scaleY,
-	}
-}
-
-function onMouseDown(e: MouseEvent) {
-	handleMouseDown(pos(e))
-	draw()
-}
-
-function onMouseMove(e: MouseEvent) {
-	const p = pos(e)
-	updateCursor(p)
-	const oldHover = hoveredShapeID.value
-	handleMouseMove(p)
-	if (draggingShapeID.value || resizingShapeID.value || oldHover !== hoveredShapeID.value) {
-		draw()
-	}
-}
-
-async function onMouseUp() {
-	await handleMouseUp()
-	draw()
-}
-function onMouseLeave() {
-	handleMouseLeave()
-}
-
-watchEffect(() => {
-	if (canvas.value) canvas.value.style.cursor = getCursor()
+defineExpose({
+	zoom,
+	draw,
+	canvasRef,
 })
 
 let isInitialized = false
@@ -146,5 +51,132 @@ watchEffect(() => {
 	if (!isInitialized && shapes.value.length === 0) return
 	draw()
 	isInitialized = true
+})
+
+function onContextMenu($event: MouseEvent) {
+	const p = getPos($event, canvasRef.value!)
+	const canvasPoint = zoom.getCanvasPoint(p)
+	const shape = shapeInteractions.findShapeAtPos(canvasPoint)
+
+	const isLocked = shape && shapeInteractions.lockedShapeIDs.value.includes(shape.id)
+	if (isLocked) return
+
+	if (shape) {
+		menu.openAtPosition($event.clientX, $event.clientY, [{ label: 'Delete', action: () => shapeInteractions.deleteShape(shape.id) }])
+	} else {
+		menu.openAtPosition($event.clientX, $event.clientY, [
+			{ label: 'Create shape', action: () => shapeInteractions.createShape(canvasPoint) },
+		])
+	}
+}
+
+function handleGlobalMouseUp() {
+	if (toolManager.selectedTool.value === 'select') {
+		shapeInteractions.handleMouseUp()
+		draw()
+	}
+}
+
+function handleGlobalMouseLeave() {
+	if (toolManager.selectedTool.value === 'select') {
+		shapeInteractions.handleMouseLeave()
+	}
+}
+
+const handleResize = () => renderer.resizeCanvas()
+
+onMounted(() => {
+	handleResize()
+	window.addEventListener('resize', handleResize)
+	window.addEventListener('mouseup', handleGlobalMouseUp)
+	window.addEventListener('mouseleave', handleGlobalMouseLeave)
+})
+
+onBeforeUnmount(() => {
+	window.removeEventListener('resize', handleResize)
+	window.removeEventListener('mouseup', handleGlobalMouseUp)
+	window.removeEventListener('mouseleave', handleGlobalMouseLeave)
+})
+
+function draw() {
+	renderer.draw()
+}
+
+function onMouseDown($event: MouseEvent) {
+	if (menu.visible.value) return
+	if ($event.button === 2) return
+
+	const p = getPos($event, canvasRef.value!)
+	const canvasPoint = zoom.getCanvasPoint(p)
+
+	switch (toolManager.selectedTool.value) {
+		case 'select':
+			const shape = shapeInteractions.findShapeAtPos(canvasPoint)
+			if (shape) shapeInteractions.handleMouseDown(canvasPoint)
+			else pan.startPan(p)
+			break
+		case 'rect':
+			shapeInteractions.createShape(canvasPoint)
+			break
+		case 'ellipse':
+			shapeInteractions.createShape(canvasPoint)
+			break
+		case 'line':
+			shapeInteractions.createShape(canvasPoint)
+			break
+		case 'delete': {
+			const shape = shapeInteractions.findShapeAtPos(canvasPoint)
+			if (shape && !shapeInteractions.lockedShapeIDs.value.includes(shape.id)) shapeInteractions.deleteShape(shape.id)
+			break
+		}
+		default:
+			shapeInteractions.handleMouseDown(canvasPoint)
+	}
+
+	draw()
+}
+
+function onMouseMove(e: MouseEvent) {
+	if (menu.visible.value) return
+
+	if (pan.updatePan({ x: e.clientX, y: e.clientY }, zoom.offset.value, draw)) return
+
+	const p = getPos(e, canvasRef.value!)
+	const canvasPoint = zoom.getCanvasPoint(p)
+	remoteCursors.updateCursor(canvasPoint)
+
+	const oldHover = shapeInteractions.hoveredShapeID.value
+	if (toolManager.selectedTool.value === 'select') shapeInteractions.handleMouseMove(canvasPoint)
+	if (
+		shapeInteractions.draggingShapeID.value ||
+		shapeInteractions.resizingShapeID.value ||
+		oldHover !== shapeInteractions.hoveredShapeID.value
+	)
+		draw()
+}
+
+function onMouseUp() {
+	if (pan.isPanning.value) {
+		pan.endPan()
+		return
+	}
+
+	if (toolManager.selectedTool.value === 'select') {
+		shapeInteractions.handleMouseUp()
+		draw()
+	}
+}
+
+function onMouseLeave() {
+	shapeInteractions.handleMouseLeave()
+}
+
+function handleWheel(e: WheelEvent) {
+	zoom.handleWheel(e, canvasRef.value!)
+	draw()
+}
+
+watchEffect(() => {
+	if (canvasRef.value) canvasRef.value.style.cursor = shapeInteractions.getCursor()
 })
 </script>

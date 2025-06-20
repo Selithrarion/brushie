@@ -42,20 +42,16 @@ export default defineConfigWithVueTs(
 				typescript: {
 					alwaysTryTypes: true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
 					bun: true, // resolve Bun modules https://github.com/import-js/eslint-import-resolver-typescript#bun
-					project: './tsconfig.json',
+					project: './tsconfig.app.json',
 					node: {
 						extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
 					},
 				},
 			},
 		},
-	},
 
-	{
 		rules: {
 			'prettier/prettier': 'warn',
-
-			'no-unresolved': 0,
 
 			'import/named': 'off',
 			'import/namespace': 'off',
@@ -84,6 +80,26 @@ export default defineConfigWithVueTs(
 					})),
 					'pathGroupsExcludedImportTypes': ['builtin'],
 					'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+				},
+			],
+
+			'vue/attributes-order': [
+				'warn',
+				{
+					order: [
+						'DEFINITION', // is, v-is
+						'LIST_RENDERING', // v-for item in items
+						'CONDITIONALS', // v-if, v-else-if, v-else, v-show, v-cloak
+						'RENDER_MODIFIERS', // v-once, v-pre
+						'GLOBAL', // id
+						'UNIQUE', // ref, key, slot
+						'TWO_WAY_BINDING', // v-model
+						'OTHER_DIRECTIVES', // custom directives
+						'OTHER_ATTR', // everything else not covered
+						'EVENTS', // @click
+						'CONTENT', // v-text, v-html
+					],
+					alphabetical: true,
 				},
 			],
 		},

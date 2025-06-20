@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Canvas2D from '@/features/render/Canvas2D.vue'
+import CanvasContainer from '@/features/render/CanvasContainer.vue'
 </script>
 
 <template>
 	<div>
-		<Canvas2D />
+		<CanvasContainer canvas-type="2d" />
 	</div>
 </template>

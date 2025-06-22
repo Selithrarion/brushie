@@ -59,6 +59,8 @@ export default defineConfigWithVueTs(
 			'import/no-named-as-default': 'off',
 			'import/no-named-as-default-member': 'off',
 
+			'@typescript-eslint/no-unused-expressions': 'off',
+
 			'@typescript-eslint/no-unused-vars': [
 				'warn',
 				{

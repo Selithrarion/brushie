@@ -3,7 +3,7 @@ import { toRaw } from 'vue'
 
 import type { Shape } from '@/features/render/types/Shape.ts'
 
-const DB_NAME = 'figma'
+const DB_NAME = 'whiteboard'
 const STORE_NAME = 'shapes'
 
 const dbPromise = openDB(DB_NAME, 1, {
@@ -13,13 +13,13 @@ const dbPromise = openDB(DB_NAME, 1, {
 		}
 	},
 	blocked: () => {
-		console.warn('Database blocked - other instance is open')
+		console.warn('Database blocked')
 	},
 	blocking: () => {
-		console.warn('Database blocking - newer version trying to open')
+		console.warn('Database blocking')
 	},
 	terminated: () => {
-		console.error('Database connection terminated unexpectedly')
+		console.error('Database terminated')
 	},
 })
 

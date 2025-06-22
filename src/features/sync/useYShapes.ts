@@ -1,27 +1,32 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { WebrtcProvider } from 'y-webrtc'
 import * as Y from 'yjs'
 
-import type { Shape } from '@/features/render/types/Shape.ts'
+import { type Shape, ShapeType } from '@/features/render/types/Shape.ts'
 import { initWebrtcProvider } from '@/features/sync/providers/webrtc.ts'
 import { YShapeTransactions } from '@/features/sync/types/transactions.ts'
+import { getShapesDB, clearShapesDB, saveShapeDB, deleteShapeDB } from '@/shared/services/database.service.ts'
 
-import { getShapesDB, clearShapesDB, saveShapeDB, deleteShapeDB } from '../render/db.ts'
-
-const roomName = 'test1'
+const roomID = 'test1'
 const yDocsMap = new Map<string, { ydoc: Y.Doc; provider: WebrtcProvider }>()
 
-let entry = yDocsMap.get(roomName)
+let entry = yDocsMap.get(roomID)
 if (!entry) {
 	const ydoc = new Y.Doc()
-	const provider = initWebrtcProvider(roomName, ydoc)
+	const provider = initWebrtcProvider(roomID, ydoc)
 	entry = { ydoc, provider }
-	yDocsMap.set(roomName, entry)
+	yDocsMap.set(roomID, entry)
 }
 const { ydoc, provider } = entry
 
 const yShapes = ydoc.getArray<Shape>('shapes')
 const shapes = ref<Shape[]>([])
+const shapeMap = computed(() => {
+	const map = new Map<string, Shape>()
+	shapes.value.forEach((s) => map.set(s.id, s))
+	return map
+})
+
 const status = ref<'connected' | 'disconnected'>('disconnected')
 const peersCount = ref(0)
 
@@ -88,7 +93,11 @@ function init() {
 			if (change.insert) {
 				shapes.value.splice(index, 0, ...change.insert)
 				for (const shape of change.insert) {
-					pendingSaveShapes.set(shape.id, shape)
+					if (shape.type === ShapeType.PENCIL) {
+						pendingSaveShapes.set(shape.id, JSON.parse(JSON.stringify(shape)))
+					} else {
+						pendingSaveShapes.set(shape.id, shape)
+					}
 					pendingDeleteShapeIDs.delete(shape.id)
 				}
 				index += change.insert.length
@@ -147,5 +156,5 @@ function resetRoom() {
 
 export function useYShapes() {
 	init()
-	return { ydoc, provider, yShapes, shapes, status, peersCount, undo, redo, reconnect, resetRoom }
+	return { ydoc, provider, roomID, yShapes, shapes, shapeMap, status, peersCount, undo, redo, reconnect, resetRoom }
 }

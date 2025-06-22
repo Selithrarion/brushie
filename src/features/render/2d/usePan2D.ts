@@ -1,8 +1,9 @@
 import { ref } from 'vue'
 
+import { useZoom2D } from '@/features/render/2d/useZoom2D.ts'
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
-export function usePanInteraction() {
+export function usePan2D(zoom: ReturnType<typeof useZoom2D>) {
 	const isPanning = ref(false)
 	const lastPanPos = ref<PositionXY>({ x: 0, y: 0 })
 
@@ -11,16 +12,14 @@ export function usePanInteraction() {
 		lastPanPos.value = position
 	}
 
-	function updatePan(mousePosition: PositionXY, currentOffset: PositionXY, draw: () => void) {
+	function updatePan(mousePosition: PositionXY) {
 		if (!isPanning.value) return false
 
 		const dx = mousePosition.x - lastPanPos.value.x
 		const dy = mousePosition.y - lastPanPos.value.y
-		currentOffset.x += dx
-		currentOffset.y += dy
+		zoom.offset.value.x += dx
+		zoom.offset.value.y += dy
 		lastPanPos.value = { x: mousePosition.x, y: mousePosition.y }
-
-		draw()
 
 		return true
 	}

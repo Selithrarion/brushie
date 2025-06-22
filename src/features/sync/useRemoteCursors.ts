@@ -4,7 +4,7 @@ import type { Awareness } from 'y-protocols/awareness'
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
 type RemoteCursor = {
-	pos: PositionXY
+	worldPos: PositionXY
 	name: string
 	color: string
 }
@@ -20,8 +20,8 @@ export function useRemoteCursors(provider: { awareness: Awareness }) {
 
 	provider.awareness.setLocalStateField('name', 'Sergey')
 	provider.awareness.setLocalStateField('color', pastelColorFromClientID(provider.awareness.clientID))
-	function updateCursor(pos: PositionXY) {
-		provider.awareness.setLocalStateField('cursor', { x: pos.x, y: pos.y })
+	function updateCursor(worldPos: PositionXY) {
+		provider.awareness.setLocalStateField('cursor', { x: worldPos.x, y: worldPos.y })
 	}
 
 	provider.awareness.on('change', () => {
@@ -31,7 +31,7 @@ export function useRemoteCursors(provider: { awareness: Awareness }) {
 		states.forEach((state, clientID) => {
 			if (clientID !== provider.awareness.clientID && state.cursor) {
 				newCursors[clientID] = {
-					pos: { x: state.cursor.x, y: state.cursor.y },
+					worldPos: { x: state.cursor.x, y: state.cursor.y },
 					name: state.name,
 					color: state.color,
 				}
@@ -41,11 +41,11 @@ export function useRemoteCursors(provider: { awareness: Awareness }) {
 		otherCursors.value = newCursors
 	})
 
-	function drawCursors(ctx: CanvasRenderingContext2D) {
+	function drawCursors(ctx: CanvasRenderingContext2D, worldToScreenFn = (worldPos: PositionXY) => worldPos) {
 		for (const cursor of Object.values(otherCursors.value)) {
 			const size = 16
-			const { pos, name, color } = cursor
-			const { x, y } = pos
+			const { worldPos, name, color } = cursor
+			const { x, y } = worldToScreenFn(worldPos)
 
 			// cursor
 			ctx.beginPath()

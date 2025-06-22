@@ -4,6 +4,6 @@ import CanvasContainer from '@/features/render/CanvasContainer.vue'
 
 <template>
 	<div>
-		<CanvasContainer canvas-type="2d" />
+		<CanvasContainer canvas-type="3d" />
 	</div>
 </template>

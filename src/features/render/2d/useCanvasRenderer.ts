@@ -1,22 +1,19 @@
 import { type Ref } from 'vue'
 
+import { useZoom2D } from '@/features/render/2d/useZoom2D.ts'
+import { useShapeCore } from '@/features/render/hooks/useShapeCore.ts'
 import type { Shape } from '@/features/render/types/Shape.ts'
-import { useCanvasZoom } from '@/features/render/useCanvasZoom.ts'
-import { useShapeInteractions } from '@/features/render/useShapeInteractions.ts'
 import { useRemoteCursors } from '@/features/sync/useRemoteCursors.ts'
 import { lightenColor, shadeColor } from '@/shared/utils/colors.ts'
 
 interface Dependencies {
 	shapes: Ref<Shape[]>
-	zoom: ReturnType<typeof useCanvasZoom>
-	shapeInteractions: ReturnType<typeof useShapeInteractions>
+	zoom: ReturnType<typeof useZoom2D>
+	shapeCore: ReturnType<typeof useShapeCore>
 	remoteCursors: ReturnType<typeof useRemoteCursors>
 }
 
-export function useCanvasRenderer(
-	canvasRef: Ref<HTMLCanvasElement | undefined>,
-	{ shapes, zoom, shapeInteractions, remoteCursors }: Dependencies,
-) {
+export function useCanvasRenderer(canvasRef: Ref<HTMLCanvasElement | undefined>, { shapes, zoom, shapeCore, remoteCursors }: Dependencies) {
 	function draw() {
 		if (!canvasRef.value) return
 
@@ -44,9 +41,9 @@ export function useCanvasRenderer(
 		ctx.setTransform(zoom.scale.value, 0, 0, zoom.scale.value, zoom.offset.value.x, zoom.offset.value.y)
 	}
 
-	function drawMarkers(ctx: CanvasRenderingContext2D, shape: Shape) {
-		const radius = shapeInteractions.HANDLE_SIZE / 2
-		for (const { x, y } of shapeInteractions.computeHandles(shape)) {
+	function drawHandlers(ctx: CanvasRenderingContext2D, shape: Shape) {
+		const radius = shapeCore.HANDLE_SIZE / 2
+		for (const { x, y } of shapeCore.computeHandles(shape)) {
 			ctx.shadowColor = shadeColor(shape.color!, 60)
 			ctx.shadowBlur = 4
 			ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
@@ -64,14 +61,8 @@ export function useCanvasRenderer(
 
 	function drawShapes(ctx: CanvasRenderingContext2D) {
 		for (const shape of shapes.value) {
-			const isLocked = shapeInteractions.lockedShapeIDs.value.includes(shape.id)
-			const isActive =
-				!isLocked &&
-				[
-					shapeInteractions.draggingShapeID.value,
-					shapeInteractions.resizingShapeID.value,
-					shapeInteractions.hoveredShapeID.value,
-				].includes(shape.id)
+			const isLocked = shapeCore.lockedShapeIDs.value.includes(shape.id)
+			const isActive = !isLocked && shapeCore.activeShapeID.value === shape.id
 
 			// fill
 			if (isLocked) {
@@ -79,7 +70,7 @@ export function useCanvasRenderer(
 			} else {
 				ctx.fillStyle = isActive ? lightenColor(shape.color!) : shape.color!
 			}
-			ctx.fillRect(shape.x, shape.y, shape.width, shape.height)
+			ctx.fillRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1)
 
 			// border
 			if (isLocked) {
@@ -92,15 +83,16 @@ export function useCanvasRenderer(
 				ctx.setLineDash([])
 			}
 
-			ctx.strokeRect(shape.x, shape.y, shape.width, shape.height)
+			ctx.strokeRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1)
 
 			if (isActive) {
 				// more border
 				ctx.strokeStyle = shadeColor(shape.color!)
 				ctx.lineWidth = 2
 				ctx.setLineDash([])
-				ctx.strokeRect(shape.x, shape.y, shape.width, shape.height)
-				drawMarkers(ctx, shape)
+				ctx.strokeRect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1)
+
+				drawHandlers(ctx, shape)
 			}
 		}
 	}

@@ -2,17 +2,18 @@ import { ref } from 'vue'
 
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
-export function useCanvasZoom() {
+export function useZoom2D() {
 	const scale = ref(1)
 	const offset = ref({ x: 0, y: 0 })
+
+	const MIN_SCALE = 0.1
+	const MAX_SCALE = 10
 
 	function zoomAtPoint(point: PositionXY, delta: number, canvas: HTMLCanvasElement) {
 		if (!canvas) return
 
 		const newScale = scale.value * delta
-		const minScale = 0.1
-		const maxScale = 10
-		const clamped = Math.min(Math.max(newScale, minScale), maxScale)
+		const clamped = Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE)
 
 		const x0 = (point.x - offset.value.x) / scale.value
 		const y0 = (point.y - offset.value.y) / scale.value
@@ -44,11 +45,15 @@ export function useCanvasZoom() {
 		zoomAtPoint({ x: px, y: py }, delta, canvas)
 	}
 
-	function getCanvasPoint(p: PositionXY): PositionXY {
+	function getWorldPos2D(p: PositionXY): PositionXY {
 		return {
 			x: (p.x - offset.value.x) / scale.value,
 			y: (p.y - offset.value.y) / scale.value,
 		}
+	}
+
+	function resetZoom() {
+		scale.value = 1
 	}
 
 	return {
@@ -57,6 +62,7 @@ export function useCanvasZoom() {
 		zoomAtPoint,
 		zoomAtCenter,
 		handleWheel,
-		getCanvasPoint,
+		getWorldPos2D,
+		resetZoom,
 	}
 }

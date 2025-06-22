@@ -1,6 +1,6 @@
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
-export function getPos($event: MouseEvent, el: HTMLCanvasElement | null): PositionXY {
+export function getPos2D($event: MouseEvent, el: HTMLCanvasElement | null): PositionXY {
 	if (!el) return { x: 0, y: 0 }
 
 	const rect = el.getBoundingClientRect()

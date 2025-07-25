@@ -1,6 +1,6 @@
 <template>
 	<teleport to="body">
-		<transition name="scale-fade">
+		<transition name="fade-scale">
 			<div
 				v-if="visible"
 				ref="menuRef"
@@ -13,14 +13,14 @@
 			>
 				<ul class="outline-none" @mouseleave="() => (activeIndex = null)">
 					<li
-						v-for="(item, idx) in items"
-						:key="item.label + idx"
+						v-for="(item, index) in items"
+						:key="item.label + index"
 						class="cursor-pointer rounded px-3 py-1 text-sm transition-colors hover:bg-white/50 focus:bg-white/50"
-						:class="{ 'bg-white/50': idx === activeIndex }"
+						:class="{ 'bg-white/50': index === activeIndex }"
 						role="menuitem"
 						tabindex="-1"
 						@click="select(item)"
-						@mouseenter="() => (activeIndex = idx)"
+						@mouseenter="() => (activeIndex = index)"
 					>
 						{{ item.label }}
 					</li>
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computePosition, offset, flip, shift, autoUpdate } from '@floating-ui/dom'
 import { onClickOutside } from '@vueuse/core'
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount, useTemplateRef } from 'vue'
 
 import type { MenuItem } from '@/shared/ui/menu/types.ts'
 
@@ -46,7 +46,7 @@ const props = defineProps<{
 	onClose: () => void
 }>()
 
-const menuRef = ref<HTMLElement | null>(null)
+const menuRef = useTemplateRef('menuRef')
 const pos = ref({ x: 0, y: 0 })
 let cleanupAuto: (() => void) | null = null
 const activeIndex = ref<number | null>(null)
@@ -67,17 +67,14 @@ function handleOpen() {
 	if (!props.referenceEl && props.x != null && props.y != null) {
 		pos.value = { x: props.x, y: props.y }
 	}
-
-	nextTick(() => {
+	void nextTick(() => {
 		computeAndUpdate()
-
 		if (props.referenceEl && menuRef.value) {
 			cleanupAuto = autoUpdate(props.referenceEl, menuRef.value, computeAndUpdate)
 		} else {
 			window.addEventListener('scroll', computeAndUpdate, true)
 			window.addEventListener('resize', computeAndUpdate)
 		}
-
 		menuRef.value?.focus()
 	})
 }
@@ -87,8 +84,6 @@ function handleClose() {
 	cleanupAuto = null
 	window.removeEventListener('scroll', computeAndUpdate, true)
 	window.removeEventListener('resize', computeAndUpdate)
-	window.removeEventListener('resize', props.onClose)
-	window.removeEventListener('scroll', props.onClose, true)
 }
 
 watch(
@@ -112,7 +107,8 @@ function select(item: MenuItem) {
 	} catch (e) {
 		console.error('Menu action error:', e)
 	}
-	props.onClose()
+
+	if (item.closeOnSelect || item.closeOnSelect === undefined) props.onClose()
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -140,32 +136,5 @@ onBeforeUnmount(() => {
 <style>
 .ui-menu:focus {
 	outline: none;
-}
-
-.scale-fade-enter-active {
-	transition:
-		opacity 0.15s ease,
-		transform 0.15s ease;
-}
-.scale-fade-leave-active {
-	transition:
-		opacity 0.15s ease,
-		transform 0.15s ease;
-}
-.scale-fade-enter-from {
-	opacity: 0;
-	transform: scale(0.92);
-}
-.scale-fade-enter-to {
-	opacity: 1;
-	transform: scale(1);
-}
-.scale-fade-leave-from {
-	opacity: 1;
-	transform: scale(1);
-}
-.scale-fade-leave-to {
-	opacity: 0;
-	transform: scale(0.95);
 }
 </style>

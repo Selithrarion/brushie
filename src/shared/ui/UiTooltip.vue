@@ -1,9 +1,9 @@
 <template>
-	<div ref="referenceRef" class="inline-block" @mouseenter="open()" @mouseleave="close()">
+	<div v-bind="$attrs" ref="referenceRef" class="inline-block" @mouseenter="open" @mouseleave="close">
 		<slot />
 	</div>
 
-	<transition appear name="fade-scale">
+	<transition appear name="fade-slide">
 		<div
 			v-if="isOpen && (text || $slots.content)"
 			ref="floatingRef"
@@ -18,17 +18,26 @@
 
 <script setup lang="ts">
 import { useFloating, offset, shift, flip, autoUpdate, type Placement } from '@floating-ui/vue'
-import { ref, onMounted, computed, type CSSProperties, watch } from 'vue'
+import { ref, onMounted, computed, type CSSProperties, watch, useTemplateRef } from 'vue'
 
 const props = defineProps<{
 	text?: string
 	placement?: Placement
 	disabled?: boolean
+	delay?: number
 }>()
 
+const referenceRef = useTemplateRef('referenceRef')
+const floatingRef = useTemplateRef('floatingRef')
+defineExpose({
+	referenceRef,
+	floatingRef,
+	get $el() {
+		return referenceRef.value
+	},
+})
+
 const isOpen = ref(false)
-const referenceRef = ref(null)
-const floatingRef = ref(null)
 
 const { x, y, strategy, update } = useFloating(referenceRef, floatingRef, {
 	placement: props.placement || 'top',
@@ -44,15 +53,24 @@ onMounted(() => {
 watch(
 	() => props.disabled,
 	() => {
-		console.log('dsiabled')
 		if (props.disabled) close()
 	},
 )
 
-const open = () => {
-	isOpen.value = true
+const openTimeoutID = ref<number | null>(null)
+function open() {
+	if (props.delay && props.delay > 0) {
+		openTimeoutID.value = setTimeout(() => {
+			isOpen.value = true
+			openTimeoutID.value = null
+		}, props.delay)
+	} else isOpen.value = true
 }
-const close = () => {
+function close() {
+	if (openTimeoutID.value !== null) {
+		clearTimeout(openTimeoutID.value)
+		openTimeoutID.value = null
+	}
 	isOpen.value = false
 }
 
@@ -69,23 +87,5 @@ const computedStyle = computed<CSSProperties>(() => ({
 	will-change: transform;
 	backface-visibility: hidden;
 	transform-style: preserve-3d;
-}
-
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-	transition:
-		opacity 0.2s ease,
-		transform 0.2s ease;
-	transform-origin: top center;
-}
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-	opacity: 0;
-	transform: translateY(10px);
-}
-.fade-scale-enter-to,
-.fade-scale-leave-from {
-	opacity: 1;
-	transform: translateY(0);
 }
 </style>

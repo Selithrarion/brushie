@@ -27,4 +27,14 @@ export const COLORS = {
 			fill: 'rgba(255, 255, 255, 0.1)',
 		},
 	},
+
+	shape: {
+		locked: {
+			fill: 'rgb(170,164,194)',
+		},
+	},
+
+	tool: {
+		eraser: '#b7aed6',
+	},
 }

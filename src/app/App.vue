@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+
+import PWA from '@/features/pwa/PWA.vue'
 </script>
 
 <template>
@@ -7,5 +9,6 @@ import { RouterView } from 'vue-router'
 
 	<main>
 		<RouterView />
+		<PWA />
 	</main>
 </template>

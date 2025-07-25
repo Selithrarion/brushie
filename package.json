@@ -1,5 +1,5 @@
 {
-  "name": "whiteboard",
+  "name": "brushie",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,13 +16,15 @@
     "lint": "eslint . --fix",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint-s": "run-s lint:*",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@floating-ui/vue": "^1.1.6",
     "@tailwindcss/vite": "^4.1.10",
+    "@timohausmann/quadtree-js": "^1.2.6",
     "@vueuse/core": "^13.4.0",
-    "@vueuse/motion": "^3.0.3",
+    "gsap": "^3.13.0",
     "idb": "^8.0.3",
     "lucide-vue-next": "^0.518.0",
     "pinia": "^3.0.1",
@@ -31,12 +33,14 @@
     "uuid": "^11.1.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
+    "y-indexeddb": "^9.0.12",
     "y-webrtc": "^10.3.0",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
+    "@tauri-apps/cli": "^2.6.2",
     "@tsconfig/node22": "^22.0.1",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.14.0",
@@ -60,11 +64,14 @@
     "oxlint": "^0.16.0",
     "postcss": "^8.5.6",
     "prettier": "^3.5.3",
+    "prettier-plugin-glsl": "^0.2.2",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "start-server-and-test": "^2.0.11",
     "tailwindcss": "^4.1.10",
     "typescript": "~5.8.0",
     "vite": "^6.2.4",
+    "vite-plugin-glsl": "^1.5.1",
+    "vite-plugin-pwa": "^1.0.1",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vitest": "^3.1.1",
     "vue-tsc": "^2.2.8"

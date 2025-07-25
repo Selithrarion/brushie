@@ -1,15 +1,24 @@
 <template>
-	<UiTooltip :disabled="tooltipDisabled" :placement="tooltipPlacement" :text="tooltip">
+	<UiTooltip
+		ref="rootRef"
+		v-bind="$attrs"
+		:delay="tooltipDelay"
+		:disabled="tooltipDisabled"
+		:placement="tooltipPlacement"
+		:text="tooltip"
+	>
 		<button
-			v-bind="$attrs"
 			:class="[
 				baseClasses,
+				transition,
 				sizeClasses,
 				variantClasses,
 				props.disabled || props.loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
 				buttonClass,
+				glow && 'glow',
 			]"
 			:disabled="props.disabled || props.loading"
+			:style="buttonStyles"
 			@click="handleClick"
 		>
 			<span v-if="$slots.icon" :class="['inline-flex items-center', iconWrapperClass]">
@@ -40,19 +49,30 @@
 <script setup lang="ts">
 import type { Placement } from '@floating-ui/vue'
 import { LoaderCircle } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, type CSSProperties, ref, useTemplateRef } from 'vue'
 
 import UiTooltip from '@/shared/ui/UiTooltip.vue'
 
 const props = defineProps<{
-	buttonClass?: string
+	buttonClass?: string | string[]
+	buttonStyles?: CSSProperties
 	tooltip?: string
 	tooltipPlacement?: Placement
+	tooltipDelay?: number
 	variant?: 'primary' | 'secondary'
 	size?: 'sm' | 'md' | 'lg'
+	glow?: boolean
 	disabled?: boolean
 	loading?: boolean
 }>()
+
+const rootRef = useTemplateRef('rootRef')
+defineExpose({
+	rootRef,
+	get $el() {
+		return rootRef.value?.$el
+	},
+})
 
 const emit = defineEmits<{
 	(e: 'click', $event: MouseEvent): void
@@ -66,9 +86,10 @@ function handleClick($event: MouseEvent) {
 	}, 100)
 }
 
-const base = 'rounded-lg font-medium transition-colors focus:outline-none relative select-none'
-const glassBase = `${base} backdrop-blur-md bg-white/20 border border-white/30 shadow-lg`
-const activeClasses = 'transform transition-transform active:scale-95 active:duration-100 active:ease-in-out'
+const base = 'rounded-lg font-medium focus:outline-none relative select-none border border-white/30'
+const transition = 'transition duration-200 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
+const glassBase = `${base} backdrop-blur-md bg-white/20 shadow-lg`
+const activeClasses = 'transform active:scale-95 active:duration-50 active:ease-in-out'
 const baseClasses = computed(() => (props.variant === 'secondary' ? base : glassBase))
 
 const sizeClasses = computed(() => {
@@ -109,5 +130,45 @@ button {
 	display: inline-flex;
 	align-items: center;
 	overflow: hidden;
+}
+button:hover {
+	transform: scale(1.03) rotate(-2deg);
+}
+
+@keyframes dream-glow {
+	0% {
+		box-shadow: 5px 0 15px rgba(255, 182, 193, 0.7);
+	}
+	25% {
+		box-shadow: 0 5px 20px rgba(255, 192, 203, 0.7);
+	}
+	50% {
+		box-shadow: -5px 0 15px rgba(255, 182, 193, 0.5);
+	}
+	75% {
+		box-shadow: 0 -5px 20px rgba(255, 192, 203, 0.7);
+	}
+	100% {
+		box-shadow: 5px 0 15px rgba(255, 182, 193, 0.7);
+	}
+}
+.glow {
+	animation: dream-glow 5s ease-in-out infinite alternate;
+}
+
+button::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 0;
+	background: linear-gradient(to top, rgba(255, 182, 193, 0.5), transparent);
+	transition: height 0.4s ease;
+	pointer-events: none;
+	border-radius: inherit;
+}
+button:active::after {
+	height: 100%;
 }
 </style>

@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./transitions.css";
+
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	@apply text-gray-700;
+}

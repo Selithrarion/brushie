@@ -2,6 +2,10 @@ import Quadtree from '@timohausmann/quadtree-js'
 
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
+interface RectWithItem<T> extends Quadtree.Rect {
+	item: T
+}
+
 export class QuadtreeService<T> {
 	private qt: Quadtree
 
@@ -26,18 +30,17 @@ export class QuadtreeService<T> {
 				width: box.x2 - box.x1,
 				height: box.y2 - box.y1,
 				item,
-			})
+			} as RectWithItem<T>)
 		})
 	}
 
 	find(pos: PositionXY, threshold = 10): T[] {
-		return this.qt
-			.retrieve({
-				x: pos.x - threshold,
-				y: pos.y - threshold,
-				width: threshold * 2,
-				height: threshold * 2,
-			})
-			.map((q) => q.item as T)
+		const item = this.qt.retrieve({
+			x: pos.x - threshold,
+			y: pos.y - threshold,
+			width: threshold * 2,
+			height: threshold * 2,
+		}) as RectWithItem<T>[]
+		return item.map((q) => q.item as T)
 	}
 }

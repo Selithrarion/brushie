@@ -1,5 +1,6 @@
 import gsap from 'gsap'
 import * as THREE from 'three'
+// @ts-expect-error declare?
 import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
 import { type Ref } from 'vue'
 

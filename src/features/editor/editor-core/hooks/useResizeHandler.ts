@@ -1,5 +1,6 @@
 import { useEventListener } from '@vueuse/core'
 import type * as THREE from 'three'
+// @ts-expect-error declare?
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { onMounted, type Ref } from 'vue'
 

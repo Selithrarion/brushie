@@ -1,8 +1,11 @@
 import { useRafFn } from '@vueuse/core'
 import { gsap } from 'gsap'
 import * as THREE from 'three'
+// @ts-expect-error declare?
 import { Line2 } from 'three/examples/jsm/lines/Line2'
+// @ts-expect-error declare?
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry'
+// @ts-expect-error declare?
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial'
 import { onMounted, type Ref, ref, watch } from 'vue'
 

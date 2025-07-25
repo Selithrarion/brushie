@@ -72,13 +72,13 @@
 import { Redo, Undo, ZoomIn, ZoomOut, Gamepad2Icon } from 'lucide-vue-next'
 import { computed, useTemplateRef } from 'vue'
 
+import type { useZoom3D } from '@/features/editor/editor-core/hooks/useZoom3D.ts'
 import { useGameMode } from '@/features/editor/editor-game/useGameMode.ts'
 import CanvasToolbar from '@/features/editor/editor-ui/CanvasToolbar.vue'
 import { useToolManager } from '@/features/editor/editor-ui/hooks/useToolManager.ts'
 import { YRoomStatus } from '@/features/editor/edtitor-sync/types/yjs.types.ts'
 import { useSyncShapes } from '@/features/editor/edtitor-sync/useSyncShapes.ts'
 import { useYjs } from '@/features/editor/edtitor-sync/useYjs.ts'
-import { useZoom2D } from '@/features/editor-2d-legacy/useZoom2D.ts'
 import { useOnline } from '@/features/pwa/useOnline.ts'
 import UiButton from '@/shared/ui/UiButton.vue'
 
@@ -91,7 +91,7 @@ const props = defineProps<{
 const gameMode = useGameMode()
 
 const { isOnline } = useOnline()
-const { peersCount, status, reconnect } = useYjs({ init: true, roomID: 'test1' })
+const { peersCount, status, reconnect } = useYjs()
 const { undo, redo, resetRoom } = useSyncShapes()
 
 const roomStatusColor = computed(() => (status.value === 'connected' ? 'bg-emerald-400' : 'bg-red-400'))
@@ -99,11 +99,11 @@ const roomStatusColor = computed(() => (status.value === 'connected' ? 'bg-emera
 const toolManager = useToolManager()
 
 interface CanvasInstance {
-	zoom: ReturnType<typeof useZoom2D>
+	zoom: ReturnType<typeof useZoom3D>
 	draw: () => void
 	canvasRef: HTMLCanvasElement
 }
-const canvasComponent = computed(() =>Canvas3D )
+const canvasComponent = computed(() => (props.canvasType === '3d' ? Canvas3D : Canvas3D))
 const canvasComponentRef = useTemplateRef<CanvasInstance>('canvasComponentRef')
 
 const zoomPercent = computed(() => {
@@ -111,10 +111,10 @@ const zoomPercent = computed(() => {
 })
 
 function zoomIn() {
-	canvasComponentRef.value?.zoom && canvasComponentRef.value.zoom.zoomAtCenter(1.1, canvasComponentRef.value.canvasRef!)
+	canvasComponentRef.value?.zoom && canvasComponentRef.value.zoom.zoomAtCenter(1.1)
 }
 function zoomOut() {
-	canvasComponentRef.value?.zoom && canvasComponentRef.value.zoom.zoomAtCenter(0.9, canvasComponentRef.value.canvasRef!)
+	canvasComponentRef.value?.zoom && canvasComponentRef.value.zoom.zoomAtCenter(0.9)
 }
 function resetZoom() {
 	canvasComponentRef.value?.zoom && canvasComponentRef.value.zoom.resetZoom()

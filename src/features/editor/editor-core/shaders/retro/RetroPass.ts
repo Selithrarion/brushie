@@ -1,3 +1,4 @@
+// @ts-expect-error declare?
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 
 import fragment from './fragment.glsl'

@@ -1,6 +1,9 @@
 import * as THREE from 'three'
+// @ts-expect-error declare?
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+// @ts-expect-error declare?
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+// @ts-expect-error declare?
 import type { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 import { type Ref, shallowRef, watch } from 'vue'
 
@@ -18,8 +21,11 @@ export function usePostProcessing(deps: Deps) {
 	const retroPass = shallowRef<ShaderPass | null>(null)
 
 	watch(
-		() => [deps.renderer.value, deps.scene.value, deps.camera.value],
-		([renderer, scene, camera]) => {
+		() => deps.renderer.value,
+		() => {
+			const renderer = deps.renderer.value
+			const scene = deps.scene.value
+			const camera = deps.camera.value
 			if (!renderer || !scene || !camera) return
 
 			composer.value = new EffectComposer(renderer)

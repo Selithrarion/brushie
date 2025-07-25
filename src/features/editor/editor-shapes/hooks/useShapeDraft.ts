@@ -3,12 +3,11 @@ import { ref, type Ref } from 'vue'
 import type { EraserDraftTool } from '@/features/editor/editor-shapes/hooks/useEraserDraft.ts'
 import type { LineStartArgs } from '@/features/editor/editor-shapes/hooks/useLineDraft.ts'
 import type { PencilStartArgs } from '@/features/editor/editor-shapes/hooks/usePencilDraft.ts'
-import type { CreateShapeFn } from '@/features/editor/editor-shapes/hooks/useShapeCore.ts'
+import type { CreateShapeFn, CreateShapeOptions } from '@/features/editor/editor-shapes/hooks/useShapeCore.ts'
 import type { TShapeDraft } from '@/features/editor/edtitor-sync/types/draft.types.ts'
 import { getSyncDraftShapes } from '@/features/editor/edtitor-sync/useSyncDraftShapes.ts'
 import { useYjs } from '@/features/editor/edtitor-sync/useYjs.ts'
 import type { PencilShape, StrokeShape } from '@/features/editor/types/shape.types.ts'
-import type { CreateShapeOptions } from '@/features/editor-2d-legacy/useShapeCoreOld.ts'
 import type { PositionXY } from '@/shared/types/PositionXY.ts'
 
 type Options<TShape, TStartArgs extends unknown[]> = {

@@ -1,18 +1,18 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "src/**/*.glsl"],
-  "exclude": ["src/**/__tests__/*"],
-  "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+	"extends": "@vue/tsconfig/tsconfig.dom.json",
+	"include": ["env.d.ts", "src/**/*", "src/**/*.vue", "src/**/*.glsl"],
+	"exclude": ["src/**/__tests__/*", "node_modules/three/examples/jsm/**"],
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
 
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
 
-    "lib": ["DOM", "ESNEXT"],
-    "target": "ESNext",
+		"lib": ["DOM", "ESNEXT"],
+		"target": "ESNext",
 
-    "types": ["vite-plugin-glsl/ext", "vite-plugin-pwa/vue"]
-  }
+		"types": ["vite-plugin-glsl/ext", "vite-plugin-pwa/vue"]
+	}
 }

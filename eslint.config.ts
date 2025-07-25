@@ -4,7 +4,9 @@ import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import { globalIgnores } from 'eslint/config'
+// @ts-expect-error declare?
 import pluginCypress from 'eslint-plugin-cypress/flat'
+// @ts-expect-error declare?
 import pluginImport from 'eslint-plugin-import'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import pluginPrettier from 'eslint-plugin-prettier/recommended'

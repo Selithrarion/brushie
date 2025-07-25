@@ -4,6 +4,8 @@
 a painterly vector playground with jelly motion, brush-based shapes, and interactive effects  
 inspired by excalidraw, miro, figma  
 
+demo -- https://brushie.vercel.app/
+
 initially planned as a proper high-performancewhiteboard/vector editor  
 but after implementing fundamental features i realized that wanna gamify it a bit and take a deeper dive into shaders  
 so dont measure the performance here hahahah  

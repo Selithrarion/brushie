@@ -1,4 +1,6 @@
 # brushie
+![screenshot 1](./github-media/1.webp)
+
 a painterly vector playground with jelly motion, brush-based shapes, and interactive effects  
 inspired by excalidraw, miro, figma  
 
@@ -30,7 +32,10 @@ glad to any PRs and feel free to ask any questions on linkedin/telegram。 thank
 todo
 
 ## screenshots
-todo
+![screenshot 2](./github-media/2.webp)
+![screenshot 3](./github-media/3.webp)
+![screenshot 4](./github-media/4.webp)
+![screenshot 5](./github-media/5.webp)
 
 ## features
 ### ✨ core drawing
@@ -126,7 +131,7 @@ used modular feature-based architecture
 <summary>hooks reference</summary>
 
 #### editor-core
-- `useCanvasBackground` -- used to make threejs plane to make proper retro pass. initially there were just css background
+- `useCanvasBackground` -- used to make threejs plane to make proper retro pass. initially there was just css background
 - `useJellyVelocityAnimation` -- calculates jelly velocity for animated distortion based on motion
 - `useGridDots` -- renders subtle grid dots on canvas for alignment and spatial reference
 - `useMeshAnimation` -- fade/brush animations for shapes
